@@ -1,0 +1,35 @@
+version : "3"
+
+services : 
+    db : 
+        image : mysql
+        command: --default-authentication-plugin=mysql_native_password
+        volumes:
+            - docker-nodejs-mysql:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+        restart: always
+        env_file :
+            - ./.env
+        ports : 
+            - 3310:3306
+
+    rdb : 
+        image : redis
+        ports : 
+            - 6381:6379
+
+    app:
+        build : ./app
+        volumes : 
+            - ./app:/app:rw
+        ports :
+            - ${EXPOSED_APP_PORT}:${APP_PORT}
+        env_file :
+            - ./.env
+        command : ["npm", "run", "dev"]
+        depends_on : 
+            - db
+            - rdb
+volumes:
+    docker-nodejs-mysql:
